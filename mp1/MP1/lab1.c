@@ -54,32 +54,44 @@
 #define MAXKEY 5
 
 
-int main()
-{
+int main() {
     int isPrime(int number);        //                  //
     void readMessage(void);         // Function Headers //
     void sendMessage(void);         //                  //
 
     char line[MAXLINE];         // the entire message
     int msgSize;                // amount of values per message
-    int keyValue, id;           // key value is our prime checker and id the is last value in the array so
-    int msgChecker = 0;         //
-    int numOfPrimes;            //
-    int sizeOfArr;              //
+    int keyValue;           // key value is our prime checker and id the is last value in the array so
+    //int msgChecker = 0;         //
+    //int numOfPrimes;            //
+    //int sizeOfArr;              //
 
-    fgets(line, MAXLINE, stdin);                    // This line gathers the entire input into the array line
-    sscanf(line, "%d %d", &msgSize, &keyValue);     // This puts the first value in the line into msgSize
+    for (int j = 0; j < 2; j++) {
+        if (j == 0) {
+            fgets(line, MAXLINE, stdin);
+            sscanf(line, "%d", &msgSize);
+            msgSize = line[0]-'0';
+            if (msgSize < 6 || msgSize >= 12) {
+                printf("Error 1: The message size is not valid...\n");
+                exit(1);
+            }
+        }
+        else {
+            fgets(line, MAXLINE, stdin);
+            sscanf(line, "%d", &keyValue);
+            keyValue = line[0]-'0';
+            if (keyValue <= 1 || keyValue >= 5) {
+                printf("Error 2: The key value is not valid...\n");
+                exit(1);
+            }
+        }
+    }
 
-    sizeOfArr = sizeof(line) / sizeof(line[0]);  // Logic Check to make sure we have values to read
-    if (sizeOfArr < 2 || NULL)
-        exit(1);
+    //while ( fgets(line, MAXLINE, stdin) ) {
 
-    msgSize = line[0]-'0';
-    
-
-    //while (1) {
-
-
+    //sizeOfArr = sizeof(line) / sizeof(line[0]);  // Logic Check to make sure we have values to read
+    //if (sizeOfArr < 2 || NULL)
+    //    exit(1);
 
     //}
 
