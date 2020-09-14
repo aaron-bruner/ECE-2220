@@ -56,55 +56,36 @@
 
 int main()
 {
-    int isPrime(int number);
-    void readMessage(void);
+    int isPrime(int number);        //                  //
+    void readMessage(void);         // Function Headers //
+    void sendMessage(void);         //                  //
 
-    char line[MAXLINE]; // the entire message
-    int msgSize; // amount of values per message
-    int keyValue, id; // key value is our prime checker and id the is last value in the array so
-    int msgChecker = 0;
-    int numOfPrimes;
-    int sizeOfArr;
+    char line[MAXLINE];         // the entire message
+    int msgSize;                // amount of values per message
+    int keyValue, id;           // key value is our prime checker and id the is last value in the array so
+    int msgChecker = 0;         //
+    int numOfPrimes;            //
+    int sizeOfArr;              //
 
-    /* You are REQUIRED to use fgets() and sscanf().
-     * Use of scanf() is prohibited!
-     */
+    fgets(line, MAXLINE, stdin);                    // This line gathers the entire input into the array line
+    sscanf(line, "%d %d", &msgSize, &keyValue);     // This puts the first value in the line into msgSize
 
-    fgets(line, MAXLINE, stdin); // This line gathers the entire input into the array line
-    sscanf(line, "%d %d", &msgSize, &keyValue); // This puts the first value in the line into msgSize
-
-    do {
-
-        readNumber(line, msgSize, keyValue, id);
-
-    } while (1)
-
-
-
-    sizeOfArr = sizeof(line) / sizeof(line[0]);
+    sizeOfArr = sizeof(line) / sizeof(line[0]);  // Logic Check to make sure we have values to read
     if (sizeOfArr < 2 || NULL)
         exit(1);
+
+    msgSize = line[0]-'0';
+    
+
+    //while (1) {
+
+
+
+    //}
 
 
     printf("\nMsgsize is set to %d.\n", msgSize);
     printf("\nKeyValue is set to %d.\n", keyValue);
-
-
-
-
-    // Use one of the following prints
-    // you must use exactly these prints and you cannot change the text
-
-    /* printf(">> No more message received. Program exit.\n\n\n");                             // if
-    printf(">> Msg:  I'm safe, all good.\n");                                                  // numOfPrimes == 1
-    printf(">> Msg:  Mission Success. Agent ID: %d.\n", id);                                   // numOfPrimes == 2
-    printf(">> Msg:  Mission Failed. Agent ID: %d.\n", id);                                    // numOfPrimes == 4
-    printf(">> Msg:  Don't contact me.\n");                                                    // numOfPrimes == 3
-    printf(">> Msg:  No Content.    \n");                                                      // numOfPrimes > 4
-    // or
-    printf(">> Corrupted Message.\n");                                                         // if 11 > msg > 99
-    printf("No waveform detected\n");                                                          // ?
-    printf("\n>> Agent Center is not safe now. Go find a safe place. Program exit.\n\n\n"); */ //-2
 
     exit(0);
 }
@@ -121,5 +102,19 @@ int isPrime(int number) {
 
 void readMessage (void) {
 
+
+}
+
+void sendMessage (void) {
+
+    /* printf(">> No more message received. Program exit.\n\n\n");                             // if
+    printf(">> Msg:  I'm safe, all good.\n");                                                  // numOfPrimes == 1
+    printf(">> Msg:  Mission Success. Agent ID: %d.\n", id);                                   // numOfPrimes == 2
+    printf(">> Msg:  Mission Failed. Agent ID: %d.\n", id);                                    // numOfPrimes == 4
+    printf(">> Msg:  Don't contact me.\n");                                                    // numOfPrimes == 3
+    printf(">> Msg:  No Content.    \n");                                                      // numOfPrimes > 4
+    // or
+    printf(">> Corrupted Message.\n");                                                         // if 11 > msg > 99
+    printf("\n>> Agent Center is not safe now. Go find a safe place. Program exit.\n\n\n"); */ //-2
 
 }
