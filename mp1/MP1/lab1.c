@@ -55,23 +55,22 @@
 
 
 int main() {
-    int isPrime(int number);        //                  //
-    void readMessage(void);         // Function Headers //
-    void sendMessage(void);         //                  //
+    int isPrime(int number, int keyValue);                     // Function Headers //
+    void sendMessage(int numOfPrimes, int id);   //                  //
 
     char line[MAXLINE];         // the entire message
     int msgSize;                // amount of values per message
-    int keyValue;           // key value is our prime checker and id the is last value in the array so
-    //int msgChecker = 0;         //
-    //int numOfPrimes;            //
-    //int sizeOfArr;              //
+    int keyValue, id = 0;           // key value is our prime checker and id the is last value in the array with 2 or 4 prime numbers
+    int numOfPrimes;
+    int temp;
+    int counter = 0;
 
     for (int j = 0; j < 2; j++) {
         if (j == 0) {
             fgets(line, MAXLINE, stdin);
             sscanf(line, "%d", &msgSize);
             msgSize = line[0]-'0';
-            if (msgSize < 6 || msgSize >= 12) {
+            if (msgSize < MINSIZE || msgSize >= MAXSIZE) {
                 printf("Error 1: The message size is not valid...\n");
                 exit(1);
             }
@@ -80,20 +79,33 @@ int main() {
             fgets(line, MAXLINE, stdin);
             sscanf(line, "%d", &keyValue);
             keyValue = line[0]-'0';
-            if (keyValue <= 1 || keyValue >= 5) {
+            if (keyValue <= MINKEY || keyValue >= MAXKEY) {
                 printf("Error 2: The key value is not valid...\n");
                 exit(1);
             }
         }
     }
 
-    //while ( fgets(line, MAXLINE, stdin) ) {
+    while (counter < 100) {
 
-    //sizeOfArr = sizeof(line) / sizeof(line[0]);  // Logic Check to make sure we have values to read
-    //if (sizeOfArr < 2 || NULL)
-    //    exit(1);
-
-    //}
+    for (int r = 0; r < msgSize; r++) {
+        fgets(line, MAXLINE, stdin);
+        sscanf(line, "%d", &temp);
+        temp = line[0]-'0';
+        if (temp == 0) {
+            printf(">> No more message received. Program exit.\n\n\n");
+            exit(1);
+        }
+        /*if (temp <= MINNUM || temp >= MAXNUM)
+            printf(">> Corrupted Message.\n");*/
+        numOfPrimes = 0; numOfPrimes += isPrime(temp, keyValue);
+        if (r == msgSize-1) {
+            id = temp-'0';
+            sendMessage(numOfPrimes, id);
+        }
+    }
+    counter++;
+    }
 
 
     printf("\nMsgsize is set to %d.\n", msgSize);
@@ -102,7 +114,8 @@ int main() {
     exit(0);
 }
 
-int isPrime(int number) {
+int isPrime(int number, int keyValue) {
+    number -= keyValue;
     if (number <= 1) return 0; // 0 implies non-prime
     if (number % 2 == 0 && number > 2) return 0;
     for(int i = 3; i < number / 2; i+= 2) {
@@ -112,21 +125,28 @@ int isPrime(int number) {
     return 1; // 1 implies prime number
 }
 
-void readMessage (void) {
+void sendMessage (int numOfPrimes, int id) {
 
-
-}
-
-void sendMessage (void) {
-
-    /* printf(">> No more message received. Program exit.\n\n\n");                             // if
-    printf(">> Msg:  I'm safe, all good.\n");                                                  // numOfPrimes == 1
-    printf(">> Msg:  Mission Success. Agent ID: %d.\n", id);                                   // numOfPrimes == 2
-    printf(">> Msg:  Mission Failed. Agent ID: %d.\n", id);                                    // numOfPrimes == 4
-    printf(">> Msg:  Don't contact me.\n");                                                    // numOfPrimes == 3
-    printf(">> Msg:  No Content.    \n");                                                      // numOfPrimes > 4
-    // or
-    printf(">> Corrupted Message.\n");                                                         // if 11 > msg > 99
-    printf("\n>> Agent Center is not safe now. Go find a safe place. Program exit.\n\n\n"); */ //-2
-
+    switch (numOfPrimes) {
+        case -2:
+            printf("\n>> Agent Center is not safe now. Go find a safe place. Program exit.\n\n\n");
+            exit(1);
+        case 1:
+            printf(">> Msg:  I'm safe, all good.\n");
+            break;
+        case 2:
+            printf(">> Msg:  Mission Success. Agent ID: %d.\n", id);
+            break;
+        case 3:
+            printf(">> Msg:  Don't contact me.\n");
+            break;
+        case 4:
+            printf(">> Msg:  Mission Failed. Agent ID: %d.\n", id);
+            break;
+        case 5:
+            printf(">> Msg:  No Content.    \n");
+            break;
+        default:
+            break;
+    }
 }
