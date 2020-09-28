@@ -119,17 +119,15 @@ int main()
     return 0;
 }
 
-/* The encode function does arithmetic with parity bits and prints the codeword.
+/* encode: calculates parity bits and prints codeword
  *
- * inputs The three inputs are unsigned characters; they are ASCII characters.
+ * input: three ASCII characters
+ * assumptions: input is valid
  *
- * assumptions We have to assume that the user is going to input exactly
- *             three true ASCII characters
- *
- * Example: if input letters are is 'A', '@', and '@'
+ * Example: if input letters are is 'C', 'U', and 't'
  * the final print must be:
- * ---01000 00001000 00000100 00000100
- * Codeword: 0x08080404
+ *  ---01110 10001010 01010100 10011100
+ *  Codeword: 0x0E8A549C
  */
 void encode(unsigned char first_letter, unsigned char second_letter,
             unsigned char third_letter)
@@ -147,7 +145,7 @@ void encode(unsigned char first_letter, unsigned char second_letter,
     int firstShift, secondShift, thirdShift;
     int P1, P2, P4, P8, P16; //parity bits
     int p1, p2, p4, p8, p16;
-    int count1, count2, count4, count8, count16;
+    int CounterBit1, CounterBit2, CounterBit4, CounterBit8, CounterBit16;
     int parity1, parity2, parity4, parity8, parity16;
     int i; // dummy variable
 
@@ -175,65 +173,65 @@ void encode(unsigned char first_letter, unsigned char second_letter,
 
     // Determine the first parity bit
     p1 = 0x15555555 & total;
-    count1 = 0;
-    while(p1 > 0) {
+    CounterBit1 = 0;
+    while(p1 > 0) { // Check each bit one by one and move the value one bit to the right
         if((p1 & 1) == 1)
-            count1++;
+            CounterBit1++;
         p1 >>= 1;
     }
-    if((count1 % 2) == 1)
+    if((CounterBit1 % 2) == 1) // Determine if we have even parity or not
         P1 = 1;
     else
         P1 = 0;
 
     // Determine the second parity bit
     p2 = 0x6666666 & total;
-    count2 = 0;
-    while(p2 > 0) {
+    CounterBit2 = 0;
+    while(p2 > 0) { // Check each bit one by one and move the value one bit to the right
         if((p2 & 1) == 1)
-            count2++;
+            CounterBit2++;
         p2 >>= 1;
     }
-    if((count2 % 2) == 1)
+    if((CounterBit2 % 2) == 1) // Determine if we have even parity or not
         P2 = 1;
     else
         P2 = 0;
 
     // Determine the third parity bit
     p4 = 0x18787878 & total;
-    count4 = 0;
-    while(p4 > 0) {
+    CounterBit4 = 0;
+    while(p4 > 0) { // Check each bit one by one and move the value one bit to the right
         if((p4 & 1) == 1)
-            count4++;
+            CounterBit4++;
         p4 >>= 1;
     }
-    if((count4 % 2) == 1)
+    if((CounterBit4 % 2) == 1) // Determine if we have even parity or not
         P4 = 1;
     else
         P4 = 0;
 
     // Determine the fourth parity bit
     p8 = 0x1F807F80 & total;
-    count8 = 0;
-    while(p8 > 0) {
+    CounterBit8 = 0;
+    while(p8 > 0) { // Check each bit one by one and move the value one bit to the right
         if((p8 & 1) == 1)
-            count8++;
+            CounterBit8++;
         p8 >>= 1;
     }
-    if((count8 % 2) == 1)
+    if((CounterBit8 % 2) == 1) // Determine if we have even parity or not
         P8 = 1;
     else
         P8 = 0;
 
     // Determine the fifth parity bit
     p16 = 0x1FFF8000 & total;
-    count16 = 0;
-    while(p16 > 0) {
+    CounterBit16 = 0;
+    while(p16 > 0) { // Check each bit one by one and move the value one bit to the right
         if((p16 & 1) == 1)
-            count16++;
+            CounterBit16++;
         p16 >>= 1;
     }
-    if((count16 % 2) == 1)
+    if((CounterBit16 % 2) == 1) // Determine if we have even parity or not
         P16 = 1;
     else
         P16 = 0;
@@ -245,7 +243,7 @@ void encode(unsigned char first_letter, unsigned char second_letter,
     parity2 = P2 * 0x2;
     parity1 = P1 * 0x1;
 
-    codeword = total + parity16 + parity8 + parity4 + parity2 + parity1;
+    codeword = total + parity16 + parity8 + parity4 + parity2 + parity1; // Create our code word
 
     //prints original information word in binary
     printf(" -------- ");
@@ -312,7 +310,7 @@ void decode(unsigned int codeword)
     int errorBit1, errorBit2, errorBit4, errorBit8, errorBit16;
     int firstShift, secondShift, thirdShift;
     int p1, p2, p4, p8, p16;
-    int count1, count2, count4, count8, count16;
+    int CounterBit1, CounterBit2, CounterBit4, CounterBit8, CounterBit16;
     unsigned int info_word;
     int bit_error_location;
     int error_value, i;
@@ -321,42 +319,42 @@ void decode(unsigned int codeword)
     unsigned char third_letter;
 
     //recalculates parity bits from codeword and assigns error values
-    p1 = 0x15555555 & codeword1;
-    count1 = 0;
-    while(p1 > 0) {
+    p1 = 0x15555555 & codeword1; // We want to compare bit 1 to a 1010... pattern so we use the hex representation 0x15555555
+    CounterBit1 = 0;
+    while(p1 > 0) { // Check each bit one by one and move the value one bit to the right
         if((p1 & 1) == 1)
-            count1++;
+            CounterBit1++;
         p1 = p1 >> 1;
     }
-    if((count1 % 2) == 1)
+    if((CounterBit1 % 2) == 1) // Determine if we have even parity or not
         P1 = 1;
     else P1 = 0;
     if(P1 == (0x1 & codeword)) {
         E1 = 0;
     }else E1 = 1;
 
-    p2 = 0x6666666 & codeword1;
-    count2 = 0;
-    while(p2 > 0) {
+    p2 = 0x6666666 & codeword1; // We want to compare bit 2 to a 1100... pattern so we use the hex representation 0x6666666
+    CounterBit2 = 0;
+    while(p2 > 0) { // Check each bit one by one and move the value one bit to the right
         if((p2 & 1) == 1)
-            count2++;
+            CounterBit2++;
         p2 >>= 1;
     }
-    if((count2 % 2) == 1)
+    if((CounterBit2 % 2) == 1) // Determine if we have even parity or not
         P2 = 1;
     else P2 = 0;
     if(P2*2 == (0x2 & codeword)) {
         E2 = 0;
     }else E2 = 1;
 
-    p4 = 0x18787878 & codeword1;
-    count4 = 0;
-    while(p4 > 0) {
+    p4 = 0x18787878 & codeword1; // We want to compare bit 4 to a 11110000... pattern so we use the hex representation 0x18787878
+    CounterBit4 = 0;
+    while(p4 > 0) { // Check each bit one by one and move the value one bit to the right
         if((p4 & 1) == 1)
-            count4++;
+            CounterBit4++;
         p4 >>= 1;
     }
-    if((count4 % 2) == 1)
+    if((CounterBit4 % 2) == 1) // Determine if we have even parity or not
         P4 = 1;
     else P4 = 0;
     if(P4*8 == (0x8 & codeword)) {
@@ -364,14 +362,14 @@ void decode(unsigned int codeword)
     }
     else E4 = 1;
 
-    p8 = 0x1F807F80 & codeword1;
-    count8 = 0;
-    while(p8 > 0) {
+    p8 = 0x1F807F80 & codeword1; // We want to compare bit 8 to a 1111111100000000 pattern so we use the hex representation 0x1F807F80
+    CounterBit8 = 0;
+    while(p8 > 0) { // Check each bit one by one and move the value one bit to the right
         if((p8 & 1) == 1)
-            count8++;
+            CounterBit8++;
         p8 >>= 1;
     }
-    if((count8 % 2) == 1)
+    if((CounterBit8 % 2) == 1) // Determine if we have even parity or not
         P8 = 1;
     else P8 = 0;
     if(P8*128 == (0x80 & codeword)) {
@@ -379,14 +377,14 @@ void decode(unsigned int codeword)
     }
     else E8 = 1;
 
-    p16 = 0x1FFF8000 & codeword1;
-    count16 = 0;
-    while(p16 > 0) {
+    p16 = 0x1FFF8000 & codeword1; // We want to compare bit 16 to a 11111111... pattern so we use the hex representation 0x1FFF8000
+    CounterBit16 = 0;
+    while(p16 > 0) { // Check each bit one by one and move the value one bit to the right
         if((p16 & 1) == 1)
-            count16++;
+            CounterBit16++;
         p16 >>= 1;
     }
-    if((count16 % 2) == 1)
+    if((CounterBit16 % 2) == 1) // Determine if we have even parity or not
         P16 = 1;
     else P16 = 0;
     if(P16*32768 == (0x8000 & codeword)) {
@@ -411,7 +409,7 @@ void decode(unsigned int codeword)
         error_value *= 2;
     }
 
-    //corrects erroneous bit
+    //bit correction
     if((error_value & codeword) == error_value)
         codeword -= error_value;
     else
