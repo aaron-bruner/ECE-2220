@@ -1,0 +1,52 @@
+
+MP3: Arithmetic on GF(47) with + * / ^ using letters
+Commands:
+	abc+bbc
+	turtle/frog
+	tiger^one	Operands are no more than 12 letters and no spaces
+	Ctrl-d to quit
+
+> # Examples for MP3
+> # 
+> # Test 0.1: 0, 1, 2 'abc' + 'bbc' => 'bce'
+> 'abc' + 'bbc' => 'bce'
+
+> # 
+> # Test 0.2: Negatives 'tuvwx' + 'CBAzy' => 'aaaaa'
+> 'tuvwx' + 'CBAzy' => 'aaaaa'
+
+> # 
+> # Test 0.3: Length mismatch 'orange' + 'white' => 'KyiGkE'
+> 'orange' + 'white' => 'KyiGkE'
+
+> # 
+> # Test 0.4: Inverses and zero 'abcqH' * 'AUydkzAB' => 'aUbbbZab'
+> 'abcqH' * 'AUydkzAB' => 'aUbbbZab'
+
+> # 
+> # Test 0.5: Pattern 'yyyyyyyyyyyy' * 'abcdefghijkl' => 'aybzcAdBeCfD'
+> 'yyyyyyyyyyyy' * 'abcdefghijkl' => 'aybzcAdBeCfD'
+
+> # 
+> # Test 0.6: Find the match 'abcqHU' / 'Aabdk' => 'aacviu'
+> 'abcqHU' / 'Aabdk' => 'aacviu'
+
+> # 
+> # Test 0.7: More inverses 'bbbbb' / 'ABCDU' => 'MhQnU'
+> 'bbbbb' / 'ABCDU' => 'MhQnU'
+
+> # 
+> # Test 0.8: Power 'yyyyyy' ^ 'abcdef' => 'bymgdz'
+> 'yyyyyy' ^ 'abcdef' => 'bymgdz'
+
+> # 
+> # Test 0.9: 'bird' / 'tiger' => 'fbQKR'
+> 'bird' / 'tiger' => 'fbQKR'
+
+> # 
+> # Test 0.10: 'emu' ^ 'zebra' => 'qjuRA'
+> 'emu' ^ 'zebra' => 'qjuRA'
+
+> # 
+> 
+Goodbye

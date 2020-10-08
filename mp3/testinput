@@ -1,0 +1,32 @@
+Examples for MP3
+
+Test 0.1: 0, 1, 2 'abc' + 'bbc' => 'bce'
+abc+bbc
+
+Test 0.2: Negatives 'tuvwx' + 'CBAzy' => 'aaaaa'
+tuvwx+CBAzy
+
+Test 0.3: Length mismatch 'orange' + 'white' => 'KyiGkE'
+orange+white
+
+Test 0.4: Inverses and zero 'abcqH' * 'AUydkzAB' => 'aUbbbZab'
+abcqH*AUydkzAB
+
+Test 0.5: Pattern 'yyyyyyyyyyyy' * 'abcdefghijkl' => 'aybzcAdBeCfD'
+yyyyyyyyyyyy*abcdefghijkl
+
+Test 0.6: Find the match 'abcqHU' / 'Aabdk' => 'aacviu'
+abcqHU/Aabdk
+
+Test 0.7: More inverses 'bbbbb' / 'ABCDU' => 'MhQnU'
+bbbbb/ABCDU
+
+Test 0.8: Power 'yyyyyy' ^ 'abcdef' => 'bymgdz'
+yyyyyy^abcdef
+
+Test 0.9: 'bird' / 'tiger' => 'fbQKR'
+bird/tiger
+
+Test 0.10: 'emu' ^ 'zebra' => 'qjuRA'
+emu^zebra
+
