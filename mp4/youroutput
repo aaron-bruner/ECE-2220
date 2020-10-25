@@ -1,0 +1,145 @@
+Processed 5 packets.
+
+Simple sniffer commands
+
+f FF num : Search for first instance of byte (in hex) in packet number num
+g FF     : Search for first instance of byte in each packet
+s string num  : Search for first instance of string in packet number num
+t string      : Search for first instance of string in each packet
+w     : Search all packets for website domain names
+p num : Print packet number num (formatted print)
+q     : Quit
+?     : Print this menu
+> 
+# :ECE 2220 Fall 2020 MP4 Example tests for use with mp4testinput
+> 
+# :./lab4 mp4testinput < mp4testcommands > youroutput
+> 
+# :Verify that your output matches mp4testout exactly
+> 
+# :
+> 
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   3-0]  K  e  e  p     t  h  i  s     p  a  c  k  e  t 
+          4B 65 65 70 20 74 68 69 73 20 70 61 63 6B 65 74
+                                                         
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   3-1]     a     s  e  c  r  e  t     t  o     e  v  e 
+          20 61 20 73 65 63 72 65 74 20 74 6F 20 65 76 65
+                                                         
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   3-2]  r  y  b  o  d  y  .                            
+          72 79 62 6F 64 79 2E XX XX XX XX XX XX XX XX XX
+                              
+
+> 
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   4-0]  P  r  i  s  m  a  t  i  c                      
+          50 72 69 73 6D 61 74 69 63 XX XX XX XX XX XX XX
+                         ^          
+
+Found byte: 61 in packet 4
+> 
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   0-0]  W  e  l  l  ,     a     d  o  u  b  l  e     r 
+          57 65 6C 6C 2C 20 61 20 64 6F 75 62 6C 65 20 72
+                         ^                               
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   0-1]  a  i  n  b  o  w     i  s     a     p  h  e  n 
+          61 69 6E 62 6F 77 20 69 73 20 61 20 70 68 65 6E
+                                                         
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   0-2]  o  m  e  n  o  n     o  f     o  p  t  i  c  s 
+          6F 6D 65 6E 6F 6E 20 6F 66 20 6F 70 74 69 63 73
+                                                         
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   0-3]  .  .  .                                        
+          2E 2E 2E XX XX XX XX XX XX XX XX XX XX XX XX XX
+                  
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   1-0]  w  w  w  .  g  o  o  g  l  e  .  c  o  m     i 
+          77 77 77 2E 67 6F 6F 67 6C 65 2E 63 6F 6D 20 69
+                                                    ^    
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   1-1]  s     a     w  e  b  s  i  t  e  !             
+          73 20 61 20 77 65 62 73 69 74 65 21 XX XX XX XX
+                                             
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   2-0]  -  -  -     w  w  w  .  f  o  o  .  b  a  r    
+          2D 2D 2D 20 77 77 77 2E 66 6F 6F 2E 62 61 72 20
+                   ^                                     
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   2-1]  -  -  -                                        
+          2D 2D 2D XX XX XX XX XX XX XX XX XX XX XX XX XX
+                  
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   3-0]  K  e  e  p     t  h  i  s     p  a  c  k  e  t 
+          4B 65 65 70 20 74 68 69 73 20 70 61 63 6B 65 74
+                      ^                                  
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   3-1]     a     s  e  c  r  e  t     t  o     e  v  e 
+          20 61 20 73 65 63 72 65 74 20 74 6F 20 65 76 65
+                                                         
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   3-2]  r  y  b  o  d  y  .                            
+          72 79 62 6F 64 79 2E XX XX XX XX XX XX XX XX XX
+                              
+
+Found byte: 20 in 4 unique packets
+> 
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   0-0]  W  e  l  l  ,     a     d  o  u  b  l  e     r 
+          57 65 6C 6C 2C 20 61 20 64 6F 75 62 6C 65 20 72
+                                                         
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   0-1]  a  i  n  b  o  w     i  s     a     p  h  e  n 
+          61 69 6E 62 6F 77 20 69 73 20 61 20 70 68 65 6E
+                                              ^ ---------
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   0-2]  o  m  e  n  o  n     o  f     o  p  t  i  c  s 
+          6F 6D 65 6E 6F 6E 20 6F 66 20 6F 70 74 69 63 73
+         -----------------|                              
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   0-3]  .  .  .                                        
+          2E 2E 2E XX XX XX XX XX XX XX XX XX XX XX XX XX
+                  
+
+Found string: 'phenomenon' in packet 0
+> 
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   3-0]  K  e  e  p     t  h  i  s     p  a  c  k  e  t 
+          4B 65 65 70 20 74 68 69 73 20 70 61 63 6B 65 74
+                                                         
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   3-1]     a     s  e  c  r  e  t     t  o     e  v  e 
+          20 61 20 73 65 63 72 65 74 20 74 6F 20 65 76 65
+                                                 ^ ------
+
+          0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5 
+[   3-2]  r  y  b  o  d  y  .                            
+          72 79 62 6F 64 79 2E XX XX XX XX XX XX XX XX XX
+         --------------------|
+
+Found string: 'everybody.' in 1 unique packets
+> 
+www.google.com
+www.foo.bar
+Found websites in 2 unique packets
+> 
+Goodbye

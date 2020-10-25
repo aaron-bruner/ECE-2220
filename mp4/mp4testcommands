@@ -1,0 +1,12 @@
+ECE 2220 Fall 2020 MP4 Example tests for use with mp4testinput
+./lab4 mp4testinput < mp4testcommands > youroutput
+Verify that your output matches mp4testout exactly
+
+p 3
+f 61 4
+g 20
+s phenomenon 0
+t everybody.
+w
+q
+
