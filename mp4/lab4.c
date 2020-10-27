@@ -71,111 +71,70 @@
  */
 void print_packet(int position, int slen, char *packets[MAXPACKETS], int packetnum)
 {
-    int piece_index = 0, i = 0;
-    int packetlen;
-    int piece_amt;
-    int string_index = 0;
-    char *packet_ptr= packets[packetnum];
-    // get packet length
-    packetlen= (packets[packetnum+1] - packets[packetnum]) / sizeof(char);     //get packet length
-    piece_amt=  packetlen%16==0? packetlen : packetlen+ (16- packetlen%16 );//get the total amount of pieces in a packet
-    piece_amt= piece_amt/16;
+
+    int packetLength = (packets[packetnum+1] - packets[packetnum]) / sizeof(char); //get packet length
+    char *packet_ptr = packets[packetnum];
+
     //  loop and print each piece
-    for ( piece_index = 0; piece_index < piece_amt ; ++ piece_index) {
-        /*-----------------print first line------------*/
+    for (int piece_index = 0; piece_index < (packetLength%16==0? packetLength/16 :
+                                            (packetLength +(16 - packetLength%16 )) / 16) ; ++piece_index) {
+
         printf("          ");
-        for ( i= 0; i < 16; ++i) {
+        for (int i = 0; i < 16; ++i) { // line 1
             printf("%d ", i%10);
-            // print gap between two printable chars
-            if(i<15)
-                printf(" ");
+            if(i < 15)
+                printf(" "); // Print gap
         }
-        printf("\n");
-        /*----------------print second line-------------*/
-        printf("[%4d-%d] ", packetnum, piece_index );
+
+        printf("\n[%4d-%d] ", packetnum, piece_index ); // line 2
         // check if it is in the packet
-        for (string_index= piece_index*16 ; string_index <(piece_index+1)*16 ; ++string_index) {
+        for (int string_index = piece_index * 16 ; string_index < (piece_index+1) * 16 ; ++string_index) {
             // print gap
             if(string_index < (piece_index+1)*16)
                 printf(" ");
-            if( string_index < packetlen) {
+            if( string_index < packetLength) {
                 // check if it is printable
-                if ( packet_ptr[string_index]  >= 33 && packet_ptr[string_index]<=127 )
+                if ( packet_ptr[string_index]  >= 33 && packet_ptr[string_index] <= 127 )
                     printf("%c ",packet_ptr[string_index]);
                 else
                     printf("  ");
             } else
                 printf("  ");
         }
-        printf("\n");
-        /*---------------print third line--------------*/
-        printf("         ");
-        for ( string_index = piece_index*16; string_index <(piece_index+1)*16 ; ++string_index ) {
-            // print gap
+
+        printf("\n         ");
+        for (int string_index = piece_index * 16; string_index < (piece_index+1) * 16 ; ++string_index ) {
             if(string_index < (piece_index+1)*16)
                 printf(" ");
-            if( string_index< packetlen) {
-                // check if it is printable
-                if ( packet_ptr[string_index] >= 33 && packet_ptr[string_index] <= 127 ) {
+            if( string_index < packetLength) {
+                if ( packet_ptr[string_index] >= 33 && packet_ptr[string_index] <= 127 ) { // if ascii char
                     printf("%02X", packet_ptr[string_index]);
                 } else
-                    printf("%02X", (char) packet_ptr[string_index] & 0xFF);   //if not printable, print blank
+                    printf("%02X", (char) packet_ptr[string_index] & 0xFF);   //else print blank
             } else
                 printf("XX");
         }
-        printf("\n");
 
-        /*---------------print fourth line------------*/
-        printf("         ");
-        // scan packet string
-        for ( string_index =piece_index*16 ; string_index <(piece_index+1)* 16; ++string_index ) {
+        printf("\n         "); // line 4
+        for (int string_index = piece_index * 16 ; string_index < (piece_index+1) * 16; ++string_index ) {
             //print gap
-            if( string_index> position &&  string_index <=(position+slen-1))
+            if( string_index > position &&  string_index <= (position+slen-1))
                 printf("-");
-            else if( string_index <packetlen)
+            else if( string_index < packetLength)
                 printf(" ");
             // print mark character
-            if ( string_index== position) {
+            if ( string_index == position) {
                 printf("^ ");
             } else if ( string_index > position && string_index < (position+slen-1)) {
                 printf("--");
-            } else if( string_index ==(position+slen-1)) {
+            } else if( string_index == (position+slen-1)) {
                 printf("-|");
-            } else if( string_index < packetlen )
+            } else if( string_index < packetLength )
                 printf("  ");
         }
         printf("\n\n");
     }
 
-}
-
-/*
-* @brief c_to_hex:
-*	this function is to convert the ASCII string
-*	to hex value stored in unsigned char format
-* @para *byte
-*	the input is pointer pointing to a 8-bit value
-*	needed to be converted to hex value
-* @return:
-*   hex value of the byte
-*/
-
-unsigned char c_to_hex(char * byte)
-{
-    unsigned char hex_result=0;
-    int i=0;
-    for(i=1; i>=0; i--) {
-        // convert numeric char to hex
-        if(byte[1-i] >='0' && byte[1-i]<='9')
-            hex_result|= (byte[1-i]-48)<<(i*4);
-        // convert upper letter to hex number
-        if(byte[1-i] >='A' && byte[1-i] <='F')
-            hex_result|= (byte[1-i]-55)<<(i*4);
-        // convert lower letter to hex number
-        if(byte[1-i] >='a' && byte[1-i] <='f')
-            hex_result|= (byte[1-i]-87)<<(i*4);
-    }
-    return hex_result;
 }
 
 /*----------------------------------------------------------*/
@@ -199,23 +158,27 @@ unsigned char c_to_hex(char * byte)
  */
 int find_byte_packet(char * packets[MAXPACKETS], int packetnum, char * byte)
 {
-    int found = 0;
-    int index=0;
-    int position=0;
-    int packetLength = (packets[packetnum+1] - packets[packetnum]) / sizeof(char); //get packet string length
-    char *packet_ptr = packets[packetnum];                                   //string pointer searching packet
-    unsigned char hex_value= c_to_hex(byte);
-    for (index = 0; index < packetLength; ++index) {
-        // compare byte without sign bit
-        if ( hex_value == (packet_ptr[index]&0xFF) ) {
-            position= index;
-            // print packet if it finds the byte
-            print_packet(position, 1, packets, packetnum);
-            found=1;
+    int found = FALSE;
+    int packetLength = (packets[packetnum+1] - packets[packetnum]) / sizeof(char); //get packet length
+    char *packet_ptr = packets[packetnum];
+    unsigned char hex_value = 0;
+
+    for(int i = 1; i >= 0; i--) {
+        if (byte[1-i] >= 65 && byte[1-i] <= 70) // A to F
+            hex_value |= (byte[1-i]-55)<<(i*4);
+        else if (byte[1-i] >= 97 && byte[1-i] <= 102) // a to f
+            hex_value |= (byte[1-i]-87)<<(i*4);
+        else
+            hex_value |= (byte[1-i]-48)<<(i*4);
+    }
+    for (int j = 0; j < packetLength; ++j) {
+
+        if ( hex_value == (packet_ptr[j]&0xFF) ) { // compare byte without sign bit
+            print_packet(j, 1, packets, packetnum);
+            found = TRUE;
             break;
         }
     }
-
     return found;
 }
 
@@ -240,35 +203,27 @@ int find_byte_packet(char * packets[MAXPACKETS], int packetnum, char * byte)
  */
 int find_string_packet(char *packets[MAXPACKETS], int packetnum, const char *str)
 {
-    int packetLength = (packets[packetnum+1] - packets[packetnum]) / sizeof(char);
-    int found, position, compareCounter;
-    compareCounter = found = position = 0;
+    int packetLength = (packets[packetnum+1] - packets[packetnum]) / sizeof(char); //get packet length
+    int found = 0, string_index, compareCounter = 0;
     char *string_pointer, *packet_ptr = packets[packetnum];
 
-    for (int string_index = 0; string_index < packetLength; ++string_index) {
+    for (string_index = 0; string_index < packetLength; ++string_index) {
         string_pointer = (char*) str;
-
-        // compare the string in our array to the str provided in the header
-        for (int i = 0; i < strlen(str) ; ++i) {
+        for (int i = 0; i < strlen(str) ; ++i) { // compare the string in our array to the str provided in the header
             if(*string_pointer == packet_ptr[string_index+i]) {
-                compareCounter++;
-                string_pointer++;
+                compareCounter++; string_pointer++;
             } else {
-                // reset count if character doesn't match
-                compareCounter = 0;
+                compareCounter = 0; // reset count if character doesn't match
                 break;
             }
         }
-        // Determine if we found the string
-        if(compareCounter == strlen(str)) {
-            position = string_index;
-            found = 1;
+        if(compareCounter == strlen(str)) { // if found -> found == true
+            found = TRUE;
             break;
         }
     }
-    // print packet if it finds the byte
-    if (found==1)
-        print_packet(position, strlen(str), packets, packetnum);
+    if (found == TRUE) // if found == true -> print
+        print_packet(string_index, strlen(str), packets, packetnum);
 
     return found;
 }
@@ -352,10 +307,7 @@ int www( char *string_pointer, char *header)
             break;
         }
     }
-    if (result == FALSE)
-        return FALSE;
-    else
-        return TRUE;
+    return result;
 }
 /*----------------------------------------------------------*/
 /* This function is a stub for searching all packets for website domain names.
@@ -392,34 +344,37 @@ int find_websites(char *packets[MAXPACKETS], int numpackets)
 {
     int  found = FALSE;
     int  packetLength = 0;
-    char web_head[4] = "www.";
     char *packetPTR;
     char *sitePTR;
     char *headPTR;
     char *buttPTR;
 
     //Check every packet
-    for( int i = 0; i < numpackets; i++) {
+    for(int i = 0; i < numpackets; i++) {
         packetPTR = packets[i];
-        packetLength = (packets[i+1]- packets[i]) / sizeof(char); //the difference between the gap in packets over 4 is our string length
+        packetLength = (packets[i+1] - packets[i]) / sizeof(char); //get packet length
 
-        for(int string_index = 0; string_index < packetLength; string_index++) { // Look to see if we can find a website
-
-            if( www(&packetPTR[string_index], web_head) && (string_index+3 < packetLength) ) { // Check to see if the first 4 characters are www. and also make sure we don't run off the array
-                sitePTR = &packetPTR[string_index+4]; // If we found a website with www. then we want to set our sitePTR to point to the name of the website
-                headPTR= &packetPTR[string_index]; // Since we found the website www. we note this by putting it's address in headPTR
+        for(int string_index = 0; string_index < packetLength; string_index++) {
+            if( www(&packetPTR[string_index], "www.") && (string_index+3 < packetLength) ) { /* Check to see if the
+                                                                                               / first 4 characters are
+                                                                                               / www. and also make sure
+                                                                                               / we don't run off the
+                                                                                               / array */
+                sitePTR = &packetPTR[string_index+4]; // If we found a website with www. then we want to set our sitePTR
+                                                      // to point to the name of the website
+                headPTR= &packetPTR[string_index]; // Since we found the website www. we note this by putting it's
+                                                   // address in headPTR
                 //check website name after the first '.' occurs
                 if( ((isupper((int)*sitePTR))||(islower((int)*sitePTR))) ) {
                     while( ((isupper((int)*sitePTR))||(islower((int)*sitePTR))) && sitePTR < packets[i+1])
                         sitePTR++; //move pointer to non-alphabetic character
-
                     if( *sitePTR == 46 && (&sitePTR[3]) < packets[i+1] ) { //check the three letters before '.'
-                        if(((isupper((int)sitePTR[1]))||(islower((int)sitePTR[1]))) && ((isupper((int)sitePTR[2]))||(islower((int)sitePTR[2]))) && ((isupper((int)sitePTR[3]))||(islower((int)sitePTR[3])))) {
+                        if(((isupper((int)sitePTR[1]))||(islower((int)sitePTR[1]))) && ((isupper((int)sitePTR[2])) ||
+                            (islower((int)sitePTR[2]))) && ((isupper((int)sitePTR[3]))||(islower((int)sitePTR[3])))) {
                             found += TRUE;
                             buttPTR = &sitePTR[3];
-
                             if(buttPTR!=NULL) {
-                                for( ; headPTR <= buttPTR; headPTR++)
+                                for(; headPTR <= buttPTR; headPTR++)
                                     printf("%c", *headPTR);
                                 printf("\n");
                             }
@@ -474,16 +429,16 @@ void store_packet(char * packetspace, char * packets[MAXPACKETS], char * packet,
         packets[0] = packetspace;
 
     // Point us to the packet in packetspace we're interested in
-    packet_ptr=packets[packetnum];
+    packet_ptr = packets[packetnum];
 
     // Copy the string into the packet array
     for (int i = 0; i < packetlength; ++i) {
-        *packet_ptr=packet[i];
+        *packet_ptr = packet[i];
         packet_ptr++;
     }
 
     // Identify where the next packet starts
-    packets[packetnum+1]=packet_ptr;
+    packets[packetnum+1] = packet_ptr;
 
 }
 
