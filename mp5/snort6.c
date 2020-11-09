@@ -1,6 +1,6 @@
 /* snort6.c template
- * xxxxxxx	  	<< replace with your name!
- * xxxxxxx      << replace
+ * Aaron Bruner
+ * ajbrune
  * ECE 2220, Fall 2020
  * MP6
  *
@@ -10,12 +10,12 @@
  * data in the records as defined in the MP6.pdf specification.
  *
  * Command line argument:
- *    number of items 
+ *    number of items
  *    generate port attack
  *    seed for random number generator (optional)
  *
  * Output:
- *    binary data to stdout.  The first 4 bytes are the number of 
+ *    binary data to stdout.  The first 4 bytes are the number of
  *    records, and the remaining binary data are the structures
  */
 
@@ -42,13 +42,13 @@ struct Record {
     char dns_name[NUMLTRS];
 };
 
-/* builds a random permutation of the numbers 1 through n.  
+/* builds a random permutation of the numbers 1 through n.
  * Use Knuth shuffle to create the random permutation.
  *
  * This function is complete and should not be changed.
  *
- * Output:  a malloced array of ints 
- *    the user must free the array 
+ * Output:  a malloced array of ints
+ *    the user must free the array
  */
 int *build_random(int nodes)
 {
@@ -67,15 +67,15 @@ int *build_random(int nodes)
 // These aren't the droids you are looking for
 void embed_secret_attack(struct Record *rec_ptr, int num_records);
 
-// Most of main is complete.  You just need to add the part to 
+// Most of main is complete.  You just need to add the part to
 // generate additional random data.
 int main(int argc, char *argv[])
-{ 
+{
     int num_records = -1;
     int port_attack = -1;
     int seed = time(NULL);
 
-    if (argc != 3 && argc != 4) { 
+    if (argc != 3 && argc != 4) {
         fprintf(stderr, "Usage: snort6 num-records port-attack [seed]\n");
         exit(1);
     }
@@ -115,12 +115,36 @@ int main(int argc, char *argv[])
 
         // ---- Your changes start here ----
         // you must set threat, addrs, ports, and dns_name here.  These value are WRONG
-        rec_ptr[i].threat = 0.0;
-        rec_ptr[i].addrs[DEST_POS] = 0; 
-        rec_ptr[i].addrs[SRC_POS] = 0; 
-        rec_ptr[i].ports[DEST_POS] = 0; 
-        rec_ptr[i].ports[SRC_POS] = 0; 
+
+        rec_ptr[i].threat = drand48() * 1000;
+        // 0.0 to 1.0 * 1000 -> This is == to 0.0 - 1000.0
+
+        rec_ptr[i].addrs[DEST_POS] = drand48() * (DEST_IP_MAX - DEST_IP_MIN) + DEST_IP_MIN;
+        // addrs[0] = 0.0 to 1.0 * ( 2189414143 - 2189413888 ) + 2189413888
+
+        rec_ptr[i].addrs[SRC_POS] = drand48() * (SRC_IP_MAX - SRC_IP_MIN) + SRC_IP_MIN;
+        // addrs[1] = 0.0 to 1.0 * ( 3758096383 - 16777216) + 16777216
+
+        if( rec_ptr[i].addrs[SRC_POS] <= DEST_IP_MAX && rec_ptr[i].addrs[SRC_POS] >= DEST_IP_MIN )
+            rec_ptr[i].addrs[SRC_POS] -= DEST_IP_MIN;
+        // source address != destination address
+
+        rec_ptr[i].ports[DEST_POS] = drand48() * NUMBER_PORTS;
+        // ports[0] = 0.0 to 1.0 * 65536
+
+        rec_ptr[i].ports[SRC_POS] = drand48() * NUMBER_PORTS;
+        // ports[1] = 0.0 to 1.0 * 65536
+
         memset(rec_ptr[i].dns_name, '\0', NUMLTRS);
+        // null the 8 bytes of memory
+
+        int dns_num = (int) (drand48() * 5 + 2); // 0.0 to 1.0 * 5 + 2
+        // random number from 2 to 7
+
+        for(int j = 0; j < dns_num; j++) {
+            rec_ptr[i].dns_name[j] = 97 + (char) (drand48()*25);
+        }
+        // random char from a to z
 
         // ---- Your changes end here ----
     }
@@ -149,13 +173,13 @@ void embed_secret_attack(struct Record *rec_ptr, int num_records)
     rand_ports = build_random(MINATTACK);
     for(i = 0; i < num_records && inserts < 2*MINATTACK; i++) {
         if (i%2 == 1 && inserts < MINATTACK) {
-            rec_ptr[i].addrs[DEST_POS] = DEST_IP_MIN - 1; 
-            rec_ptr[i].addrs[SRC_POS] = SRC_IP_MIN - 1; 
-            rec_ptr[i].ports[DEST_POS] = rand_ports[inserts++] + (1<<8); 
+            rec_ptr[i].addrs[DEST_POS] = DEST_IP_MIN - 1;
+            rec_ptr[i].addrs[SRC_POS] = SRC_IP_MIN - 1;
+            rec_ptr[i].ports[DEST_POS] = rand_ports[inserts++] + (1<<8);
             strcpy(rec_ptr[i].dns_name, "clemson");
         } else if (inserts >= MINATTACK && inserts < 2*MINATTACK) {
-            rec_ptr[i].addrs[DEST_POS] = DEST_IP_MAX + 1; 
-            rec_ptr[i].addrs[SRC_POS] = SRC_IP_MAX + 1; 
+            rec_ptr[i].addrs[DEST_POS] = DEST_IP_MAX + 1;
+            rec_ptr[i].addrs[SRC_POS] = SRC_IP_MAX + 1;
             rec_ptr[i].ports[DEST_POS] = (1<<15) - inserts++;
             strcpy(rec_ptr[i].dns_name, "tigers");
         }
@@ -173,13 +197,12 @@ void embed_secret_attack(struct Record *rec_ptr, int num_records)
             unsigned int src = ran_src * SRC_IP_MIN;
             for(inserts = 0; i < num_records && inserts < num_ports; i++) {
                 if (drand48() < 0.25) {
-                    rec_ptr[i].addrs[DEST_POS] = DEST_IP_MAX + 257 + (4*j)%256; 
-                    rec_ptr[i].addrs[SRC_POS] = src; 
-                    rec_ptr[i].ports[DEST_POS] = rand_ports[inserts++] + offset; 
+                    rec_ptr[i].addrs[DEST_POS] = DEST_IP_MAX + 257 + (4*j)%256;
+                    rec_ptr[i].addrs[SRC_POS] = src;
+                    rec_ptr[i].ports[DEST_POS] = rand_ports[inserts++] + offset;
                 }
             }
             free(rand_ports);
         }
     }
 }
-
