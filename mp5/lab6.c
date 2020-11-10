@@ -29,17 +29,17 @@
  *                         for that field. Repeat for each type of sort.
  *                         Approximate sizes are acceptable as long as you are
  *                         within 5% of the answer.
- *
- *          			    Sort-type  sort-field   size sorted in 1s
- *			                        1           1   2600000
- *          			            1           2   2400000
- *          			            1           3   1400000
- *          			            1           4   2200000
- *          			            2           1   9800
- *          			            2           2   9800
- *          			            2           3   8000
- *          			            2           4   9600
- */
+ ***********************************************
+ * Sort-type * sort-field  * size sorted in 1s *
+ *         1 *          1  * 3590000           *
+ *         1 *          2  * 3425000           *
+ *         1 *          3  * 1400000           *
+ *         1 *          4  * 2000100           *
+ *         2 *          1  * 13300             *
+ *         2 *          2  * 13000             *
+ *         2 *          3  * 9500              *
+ *         2 *          4  * 12499             *
+ ***********************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -140,24 +140,19 @@ void print_records(struct Record *S, int nrecs)
 void bubblesort(struct Record *ptr, int records,
                 int (*fcomp)(const void *, const void *))
 {
-    struct Record *temp = (struct Record *) malloc( sizeof(struct Record) );
-    int flag = 0;
+    struct Record *tmp = (struct Record *) malloc( sizeof(struct Record) );
 
-    for(int i = 0; i < records - 1; i++) {
-        flag = 1;
-        for(int j = 0; j < records - i - 1; j++) {
+    for(int i = 0; i < records - 1; i++) { // loop through however many records there are - 1 per element
+        for(int j = 0; j < records - i - 1; j++) { // last record elements are sorted already
             if( fcomp(&ptr[j], &ptr[j+1]) == 1 ) {
-                flag = 0;
-                memcpy(temp, &ptr[j], sizeof(struct Record) );
-                memcpy(&ptr[j], &ptr[j+1], sizeof(struct Record) );
-                memcpy(&ptr[j+1], temp, sizeof(struct Record) );
+                memcpy(tmp, &ptr[j], sizeof(struct Record) );       // temp = &ptr[j]
+                memcpy(&ptr[j], &ptr[j+1], sizeof(struct Record) ); // &ptr[j] = &ptr[j+1]
+                memcpy(&ptr[j+1], tmp, sizeof(struct Record) );     // &ptr[j+1] = temp
             }
 
         }
-        if(flag == 1)
-            break;
     }
-    free(temp);
+    free(tmp);
 }
 
 /* An example of a function to compare records for use with qsort
@@ -196,13 +191,13 @@ int SeqNumCompare(const void *a, const void *b)
 int ThreatCompare(const void *a, const void *b)
 {
 
-    struct Record *structureA, *structureB;
+    struct Record *sa, *sb;
 
-    structureA = (struct Record *) a;
-    structureB = (struct Record *) b;
+    sa = (struct Record *) a;
+    sb = (struct Record *) b;
 
-    if (structureA->threat < structureB->threat) return -1;
-    else if (structureA->threat > structureB->threat) return 1;
+    if (sa->threat < sb->threat) return -1;
+    else if (sa->threat > sb->threat) return 1;
     else return 0;
 }
 
@@ -219,232 +214,205 @@ int ThreatCompare(const void *a, const void *b)
  *     0: record a == record b
  *     1: record a is > record b
  */
-/*
- *  @brief ThreatCompare
- *	it performs comparison between structure a and b
- *	based on threat level
- * @return
- *    -1 : record a should be before record b
- *     0 : the two records have the same ranking
- *     1 : record a should be after record b
- */
-int AddrCompare(const void *a, const void *b)
-{
+int AddrCompare(const void *a, const void *b) {
 
-    struct Record *structureA, *structureB;
+    struct Record *sa, *sb;
 
-    structureA = (struct Record *) a;
-    structureB = (struct Record *) b;
+    sa = (struct Record *) a;
+    sb = (struct Record *) b;
 
     //compare destination address
-    if (structureA->addrs[0] < structureB->addrs[0]) return -1;
-    else if (structureA->addrs[0] > structureB->addrs[0] ) return 1;
-        // compare src address
-    else if (structureA->addrs[1] < structureB->addrs[1] ) return -1;
-    else if (structureA->addrs[1] > structureB->addrs[1] ) return 1;
+    if      (sa->addrs[DEST_POS] < sb->addrs[DEST_POS]) return -1;
+    else if (sa->addrs[DEST_POS] > sb->addrs[DEST_POS]) return  1;
+
+    // compare src address
+    else if (sa->addrs[SRC_POS] < sb->addrs[SRC_POS]) return -1;
+    else if (sa->addrs[SRC_POS] > sb->addrs[SRC_POS]) return  1;
     else return 0;
 }
 
-
-/*
- *  @brief DNSNameCompare
- *	it performs comparison between structure a and b
- *	based on DNS name
- * @return
- *    -1 : record a should be before record b
- *     0 : the two records have the same ranking
- *     1 : record a should be after record b
+/*----------------------------------------------------------*/
+/* The function DNSNameCompare compares the difference in DNS
+ * names based on two different structures a and b
+ *
+ * input:
+ *     a: the pointer to the first structure
+ *     b: the pointer to the second structure
+ *
+ * return value:
+ *     -1: strlen of record a is < strlen of record b
+ *     0: strlen of record a == strlen of record b
+ *     1: strlen of record a is > strlen of record b
  */
-int DNSNameCompare(const void *a, const void *b)
-{
+int DNSNameCompare(const void *a, const void *b) {
 
     struct Record *sa, *sb;
-    int i=0;
+
     sa = (struct Record *) a;
     sb = (struct Record *) b;
+
     //sort the length of dns name first
-    if(strlen(sa->dns_name)< strlen(sb->dns_name)  ) return -1;
-    else if(strlen(sa->dns_name )> strlen(sb->dns_name) ) return 1;
-    else {
-        //if the lengths of dns name are equal
-        //then compare each letter
-        while( sa->dns_name[i]!='\0' && sb->dns_name[i]!='\0' )
-        {
-            if (sa->dns_name[i] < sb->dns_name[i]) return -1;
-            else if (sa->dns_name[i] > sb->dns_name[i]) return 1;
+    if     (strlen(sa->dns_name) < strlen(sb->dns_name)) return -1; // if DNS name strlen of sa is < sb then return -1
+    else if(strlen(sa->dns_name) > strlen(sb->dns_name)) return  1; // if DNS name strlen of sa is > sb then return  1
+
+    else { // if the strlen are the same ensure they're the same letter by letter
+        int i = 0;
+        while( sa->dns_name[i] != 0 && sb->dns_name[i] != 0 ) { // ensure we don't run off the char arr
+                 if (sa->dns_name[i] < sb->dns_name[i]) return -1; // check for a char difference between sa and sb
+            else if (sa->dns_name[i] > sb->dns_name[i]) return  1;
             i++;
         }
     }
-
-    //if both length of dns name and letters are same, return 0
-    return 0;
+    return 0; // DNS Name of sa and sb are ==
 }
 
-
-/*
- *  @brief PortCompare
- *	it performs comparison between structure a and b
- *	based on dest port
- * @return
- *    -1 : record a should be before record b
- *     0 : the two records have the same ranking
- *     1 : record a should be after record b
+/*----------------------------------------------------------*/
+/* The function PortCompare compares the difference in ports
+ * based on two different structures a and b
+ *
+ * input:
+ *     a: the pointer to the first structure
+ *     b: the pointer to the second structure
+ *
+ * return value:
+ *     -1: port of record a is < port of record b
+ *     0: port of record a == port of record b
+ *     1: port of record a is > port of record b
  */
-int PortsCompare(const void *a, const void *b)
-{
+int PortsCompare(const void *a, const void *b) {
 
     struct Record *sa, *sb;
 
     sa = (struct Record *) a;
     sb = (struct Record *) b;
 
-    //compare destination address
-    if (sa->ports[0] <sb->ports[0]) return -1;
-    else if (sa->ports[0] > sb->ports[0] ) return 1;
-        // compare src address
-    else return 0;
+
+    if      (sa->ports[DEST_POS] < sb->ports[DEST_POS]) return -1; // dest compare
+    else if (sa->ports[DEST_POS] > sb->ports[DEST_POS]) return  1;
+
+    else if (sa->ports[SRC_POS] < sb->ports[SRC_POS])   return -1; // src compare
+    else if (sa->ports[SRC_POS] > sb->ports[SRC_POS])   return  1;
+    else return 0; // is port is ==
 }
 
-
-/* @brief scan_consecutive
- * 	 this function takes the block of packets from record, the size of block as input
- * 	 and return the start_point_array and port_count array and the amount of attacks
- * 	 from a set of packet from the same source
- * @*ptr:
- * 	the block of packets
- * @block_size:
- * 	size of the block
- * @**start_port
- * 	return the array storing info of attacks from the same source
- * @**port_count
- * 	return the port_count of the start_port
- * @return
- * 	it return the amount of attacks from a block from the same source
+/*----------------------------------------------------------*/
+/* The function scan_consecutive looks for attacks from the same
+ * source and returns information about the attack back to the calling
+ * function
+ *
+ * input:
+ *     *ptr: block of packets
+ *     block_size: block size
+ *     **start_port: arr - info of attacks from the same source
+ *     **port_count: arr - counter for start_port
+ *
+ * return value:
+ *     number of attacks in a block from same source
  */
+int scan_consecutive(struct Record *ptr, int block_size, int **start_port, int **port_count ) {
+    int consecutive_count = 1, attack_count = 0, j = 0;
 
-int scan_consecutive(struct Record *ptr, int block_size, int **start_port, int **port_count )
-{
-    int i=0, consecutive_count, attack_count=0, port_index=0;
-    consecutive_count=1;
-    //scan how much attack block in a packet
-    for(i=0; i<block_size;i++)
-    {
-        //check if they are consecutive
-        if( ptr[i].ports[0] ==(ptr[i+1].ports[0]-1) ) consecutive_count++;
-        else if(consecutive_count>=16 )
-        {
-            attack_count++;	//found an attack
-            consecutive_count=1;//reset data
+    //determine how many attack blocks in a packet
+    for(int i = 0; i < block_size; i++) {
+        if(ptr[i].ports[DEST_POS] == (ptr[i+1].ports[DEST_POS] - 1)) consecutive_count++;
+        // if we find repeating ports then we increase consecutive_count
+        else if(consecutive_count >= 16 ) { // to be considered an attack we must have at least 16 occurrences
+            attack_count++;
+            consecutive_count = 1; //restart counter for the next port
         }
-        else if(consecutive_count<16){
-            consecutive_count=1;
-        }
-    }
-    //if attack exists, allocate space to store each attack info
-    if(attack_count>0)
-    {
-        *start_port= (int *)malloc(attack_count*sizeof(int) );
-        *port_count= (int *)malloc(attack_count*sizeof(int));
-        consecutive_count=1;
-        port_index=0;
-        for(i=0; i<block_size;i++)
-        {
-            if( ptr[i].ports[0] ==(ptr[i+1].ports[0]-1) ) consecutive_count++;
-            else if(consecutive_count>=16 )//attack detected
-            {       //store start_port and port_count of each attack to an array
-                (*port_count)[port_index]=consecutive_count;
-                (*start_port)[port_index]=ptr[i-1].ports[0]-consecutive_count+1;
-                port_index++;
-                consecutive_count=1;//reset consecutive count
-            }
-            else if(consecutive_count<16){
-                consecutive_count =1;
-            }
-        }
-    }
-    else{
-        *start_port=NULL;
-        *port_count=NULL;
+        else
+            consecutive_count = 1;
     }
 
+    if(attack_count > 0) {
+
+        //if attack exists, allocate space to store each attack info
+        *start_port = (int *) malloc(attack_count*sizeof(int));
+        *port_count = (int *) malloc(attack_count*sizeof(int));
+
+        consecutive_count = 1;
+
+        for(int i = 0; i < block_size; i++) {
+            if(ptr[i].ports[DEST_POS] == (ptr[i+1].ports[DEST_POS] - 1)) consecutive_count++;
+
+            else if(consecutive_count >= 16) { // if attack
+                (*port_count)[j] = consecutive_count; // record number of ports to the array
+                (*start_port)[j] = ptr[i-1].ports[DEST_POS] - consecutive_count + 1; // record the starting port
+                j++;
+                consecutive_count = 1; //reset consecutive count
+            }
+            else
+                consecutive_count = 1;
+        }
+    }
+    else {
+        *start_port = NULL;
+        *port_count = NULL;
+    }
     return attack_count;
 }
 
-
-/*
- * @brief attack_detected
- * 	  This function detects the amount of attacks from the packets
- *	  and print out the attack info and return the number of attacks
- * @*rec_ptr:
- * 	  the record array
- * @records:
- * 	  the number of packets in the array
- * @return:
- *	  it return the amount of attacks
+/*----------------------------------------------------------*/
+/* The function attack_detected determines the amount of attacks
+ * from the packets
+ *
+ * input:
+ *     *rec_ptr: record array
+ *     records: count of packets in the array
+ *
+ * return value:
+ *     the function returns the number of attacks
  */
 int attack_detected(struct Record *rec_ptr, int records )
 {
-    int attack_num=0;
-    unsigned int dest_ip=0, src_ip=0;  // source and destination IP address for attack
-    int start_port=0;                  // lowest port num in an attack
-    int port_count=0;                  // size of attack (num consequitive ports scanned)
-    int num_attacks=0;  // count the number of attacks discovered
-    int block_size=0, attack_count=0;
-    struct Record *ptr, *packs = (struct Record *) malloc(records*sizeof(struct Record) );
+    int attack_num = 0, start_port = 0, port_count = 0, num_attacks = 0, block_size = 0, attack_count = 0;
+    unsigned int dest_ip = 0, src_ip = 0;
     int *start_port_array, *port_count_array;
+    struct Record *ptr, *packs = (struct Record *) malloc(records * sizeof(struct Record) );
 
-    memcpy(packs,rec_ptr, records*sizeof(struct Record)  );
-    //sort packets before porting attack
-    qsort(packs, records, sizeof(struct Record), AddrCompare );
-    ptr= packs;
-    //loop through the received packets
-    while( ptr < &packs[records-1])
-    {
+    memcpy(packs, rec_ptr, records * sizeof(struct Record)); // copy rec_ptr into packs
+    qsort(packs, records, sizeof(struct Record), AddrCompare); //sort packets
+    ptr = packs;
+
+    while( ptr < &packs[records-1]) { //loop through the received packets
+
         src_ip = ptr->addrs[1];
-        dest_ip= ptr->addrs[0];
-        block_size=1;
-        //obtain size of block sent from the same src ip to the same dest ip
-        while( ptr[ block_size].addrs[1]== src_ip && ptr[block_size].addrs[0] ==dest_ip  )
-        {//check packet boundary
-            block_size++;
-            if(&ptr[block_size] > &packs[records-1 ] )  break;
-        }
-        //check suspect block with size >=16, which may contain more than one attack blocks
-        if(block_size>=16 )
-        {
-            //sort block data
-            qsort(ptr,block_size,sizeof(struct Record), PortsCompare );
-            //return count of attack from a block and info of each attack
-            attack_count = scan_consecutive(ptr, block_size,&start_port_array ,&port_count_array);
-            if(start_port_array!=NULL && port_count_array!=NULL)
-            {
+        dest_ip = ptr->addrs[0];
+        block_size = 1;
 
-                for(;attack_num< num_attacks+attack_count;attack_num++ )
-                {
-                    start_port=start_port_array[ attack_num-num_attacks ];
-                    port_count=port_count_array[attack_num-num_attacks ];
-                    fprintf(stderr,"attack %d at %d.%d.%d.%d from %d.%d.%d.%d starting at %d for %d ports\n", attack_num, OCT1(dest_ip),OCT2(dest_ip),OCT3(dest_ip),OCT4(dest_ip),
+        while(ptr[block_size].addrs[0] == dest_ip && ptr[block_size].addrs[1] == src_ip) { //check packet boundary
+            block_size++;
+            if(&ptr[block_size] > &packs[records-1])
+                break;
+        }
+
+        if(block_size >= 16 ) { //check suspect block with size >= 16, which may contain more than one attack blocks
+
+            qsort(ptr, block_size, sizeof(struct Record), PortsCompare); //sort block data
+            attack_count = scan_consecutive(ptr, block_size, &start_port_array, &port_count_array); //return info about attacks
+
+            if(start_port_array != NULL && port_count_array != NULL) {
+                for( ; attack_num < num_attacks + attack_count; attack_num++ ) {
+
+                    start_port = start_port_array[attack_num - num_attacks];
+                    port_count = port_count_array[attack_num - num_attacks];
+                    fprintf(stderr,"attack %d at %d.%d.%d.%d from %d.%d.%d.%d starting at %d for %d ports\n",
+                            attack_num, OCT1(dest_ip),OCT2(dest_ip),OCT3(dest_ip),OCT4(dest_ip),
                             OCT1(src_ip), OCT2(src_ip), OCT3(src_ip), OCT4(src_ip),
                             start_port, port_count);
                 }
                 free(start_port_array);
                 free(port_count_array);
-                num_attacks+=attack_count;
+                num_attacks += attack_count;
             }
         }
-        //move to the next block
-        ptr+=block_size;
-
+        ptr += block_size; //move to the next block
     }
-    //print_records(packs, records);
-    ptr=NULL;
+    ptr = NULL;
     free(packs);
 
     return num_attacks;
 }
-
-
-
 
 /*----------------------------------------------------------*/
 int main(int argc, char *argv[])
@@ -512,28 +480,22 @@ int main(int argc, char *argv[])
 
     // The code in main from the beginning until here is complete
     // Your changes start below
+    int num_attacks;
     switch(sort_type) {
-
-        case 1:
+        case 1: // qsort
             // this is the correct way to time qsort
-            start =clock();
-            switch(sort_field)
-            {
+            start = clock();
+            switch(sort_field) {
                 case 1:
-                    qsort(rec_ptr, num_records, sizeof(struct Record), SeqNumCompare);
-                    break;
+                    qsort(rec_ptr, num_records, sizeof(struct Record), SeqNumCompare); break;
                 case 2:
-                    qsort(rec_ptr, num_records, sizeof(struct Record), ThreatCompare);
-                    break;
+                    qsort(rec_ptr, num_records, sizeof(struct Record), ThreatCompare); break;
                 case 3:
-                    qsort(rec_ptr, num_records, sizeof(struct Record), DNSNameCompare);
-                    break;
+                    qsort(rec_ptr, num_records, sizeof(struct Record), DNSNameCompare); break;
                 case 4:
-                    qsort(rec_ptr, num_records, sizeof(struct Record), AddrCompare);
-                    break;
+                    qsort(rec_ptr, num_records, sizeof(struct Record), AddrCompare); break;
                 default:
                     break;
-
             }
             end = clock();
 
@@ -542,185 +504,63 @@ int main(int argc, char *argv[])
                     1000*((double)(end-start))/CLOCKS_PER_SEC, num_records);
 
             // after sorting you must validate that the list is sorted
-            switch(sort_field)
-            {
+            switch(sort_field) {
                 case 1:
-                    validate_list(rec_ptr, num_records, SeqNumCompare);
-                    break;
+                    validate_list(rec_ptr, num_records, SeqNumCompare); break;
                 case 2:
-                    validate_list(rec_ptr, num_records, ThreatCompare);
-                    break;
+                    validate_list(rec_ptr, num_records, ThreatCompare); break;
                 case 3:
-                    validate_list(rec_ptr, num_records, DNSNameCompare);
-                    break;
+                    validate_list(rec_ptr, num_records, DNSNameCompare); break;
                 case 4:
-                    validate_list(rec_ptr, num_records, AddrCompare);
-                    break;
+                    validate_list(rec_ptr, num_records, AddrCompare); break;
                 default:
                     break;
-
             }
             break;
-        case 2:
+        case 2: // bubble sort
             start = clock();
-            switch(sort_field)
-            {
+            switch(sort_field) {
                 case 1:
-                    bubblesort(rec_ptr, num_records, SeqNumCompare);
-                    end = clock();
-                    break;
+                    bubblesort(rec_ptr, num_records, SeqNumCompare); end = clock(); break;
                 case 2:
-                    bubblesort(rec_ptr, num_records, ThreatCompare);
-                    end = clock();
-                    break;
+                    bubblesort(rec_ptr, num_records, ThreatCompare); end = clock(); break;
                 case 3:
-                    bubblesort(rec_ptr, num_records, DNSNameCompare);
-                    end = clock();
-                    break;
+                    bubblesort(rec_ptr, num_records, DNSNameCompare); end = clock(); break;
                 case 4:
-                    bubblesort(rec_ptr, num_records, AddrCompare);
-                    end = clock();
-                    break;
+                    bubblesort(rec_ptr, num_records, AddrCompare); end = clock(); break;
                 default:
-                    end = clock();
-                    break;
-
-
+                    end = clock(); break;
             }
             // after sorting you must validate that the list is sorted
-            switch(sort_field)
-            {
+            switch(sort_field) {
                 case 1:
-                    validate_list(rec_ptr, num_records, SeqNumCompare);
-                    break;
+                    validate_list(rec_ptr, num_records, SeqNumCompare); break;
                 case 2:
-                    validate_list(rec_ptr, num_records, ThreatCompare);
-                    break;
+                    validate_list(rec_ptr, num_records, ThreatCompare); break;
                 case 3:
-                    validate_list(rec_ptr, num_records, DNSNameCompare);
-                    break;
+                    validate_list(rec_ptr, num_records, DNSNameCompare); break;
                 case 4:
-                    validate_list(rec_ptr, num_records, AddrCompare);
-                    break;
+                    validate_list(rec_ptr, num_records, AddrCompare); break;
                 default:
                     break;
-
             }
 
             fprintf(stderr, "lab6: bubble sort time=%g for %d records\n",
                     1000*((double)(end-start))/CLOCKS_PER_SEC, num_records);
             break;
         case 5:
-            int num_attacks=0;
+            num_attacks = 0;
             //detect attack from a record and return the total number of attacks
-            num_attacks= attack_detected(rec_ptr,num_records );
-            if(num_attacks==0)
+            num_attacks = attack_detected(rec_ptr, num_records);
+            if(num_attacks == 0)
                 fprintf(stderr,"lab6: no attacks detected for %d records\n", num_records);
-            else{
+            else {
                 // after printing details of each attack, print how many attacks are found
                 fprintf(stderr,"lab6: discovered %d attacks\n", num_attacks);
             }
             break;
         default:
             break;
-    }
-    /*if (sort_type == 1)   // qsort
-    {
-        // this is the correct way to time qsort
-        start =clock();
-        switch(sort_field)
-        {
-            case 1:
-                qsort(rec_ptr, num_records, sizeof(struct Record), SeqNumCompare);
-                break;
-            case 2:
-                qsort(rec_ptr, num_records, sizeof(struct Record), ThreatCompare);
-                break;
-            case 3:
-                qsort(rec_ptr, num_records, sizeof(struct Record), DNSNameCompare);
-                break;
-            case 4:
-                qsort(rec_ptr, num_records, sizeof(struct Record), AddrCompare);
-                break;
-            default:
-                break;
-
-        }
-        end = clock();
-
-        // you must print using exactly this format
-        fprintf(stderr, "lab6: qsort time=%g for %d records\n",
-                1000*((double)(end-start))/CLOCKS_PER_SEC, num_records);
-
-        // after sorting you must validate that the list is sorted
-        switch(sort_field)
-        {
-            case 1:
-                validate_list(rec_ptr, num_records, SeqNumCompare);
-                break;
-            case 2:
-                validate_list(rec_ptr, num_records, ThreatCompare);
-                break;
-            case 3:
-                validate_list(rec_ptr, num_records, DNSNameCompare);
-                break;
-            case 4:
-                validate_list(rec_ptr, num_records, AddrCompare);
-                break;
-            default:
-                break;
-
-        }
-    }
-    if (sort_type == 2)   // bubble sort
-    {
-        start = clock();
-        switch(sort_field)
-        {
-            case 1:
-                bubblesort(rec_ptr, num_records, SeqNumCompare);
-                end = clock();
-                break;
-            case 2:
-                bubblesort(rec_ptr, num_records, ThreatCompare);
-                end = clock();
-                break;
-            case 3:
-                bubblesort(rec_ptr, num_records, DNSNameCompare);
-                end = clock();
-                break;
-            case 4:
-                bubblesort(rec_ptr, num_records, AddrCompare);
-                end = clock();
-                break;
-            default:
-                end = clock();
-                break;
-
-
-        }
-        // after sorting you must validate that the list is sorted
-        switch(sort_field)
-        {
-            case 1:
-                validate_list(rec_ptr, num_records, SeqNumCompare);
-                break;
-            case 2:
-                validate_list(rec_ptr, num_records, ThreatCompare);
-                break;
-            case 3:
-                validate_list(rec_ptr, num_records, DNSNameCompare);
-                break;
-            case 4:
-                validate_list(rec_ptr, num_records, AddrCompare);
-                break;
-            default:
-                break;
-
-        }
-
-        fprintf(stderr, "lab6: bubble sort time=%g for %d records\n",
-                1000*((double)(end-start))/CLOCKS_PER_SEC, num_records);
     }
 
     // Somewhere you have to handle the port scan analysis.  You must either
@@ -730,16 +570,16 @@ int main(int argc, char *argv[])
 
     if (sort_field == 5) {
 
-        int num_attacks=0;
+        int num_attacks = 0;
         //detect attack from a record and return the total number of attacks
-        num_attacks= attack_detected(rec_ptr,num_records );
-        if(num_attacks==0)
+        num_attacks = attack_detected(rec_ptr, num_records);
+        if(num_attacks == 0)
             fprintf(stderr,"lab6: no attacks detected for %d records\n", num_records);
-        else{
+        else {
             // after printing details of each attack, print how many attacks are found
             fprintf(stderr,"lab6: discovered %d attacks\n", num_attacks);
         }
-    }*/
+    }
 
     // printing the records is required.  If you don't want to save
     // the output, on the shell redirect stdout to /dev/null
